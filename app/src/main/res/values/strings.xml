@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Mu Hà Nội</string>
+    <string name="apk_name">MuV85.apk</string>
+    <string name="loading_explain">When google is reviewing our application, we dont let them see that we install the main APK. When the application be published, we let it run</string>
+</resources>
