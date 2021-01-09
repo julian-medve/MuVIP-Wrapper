@@ -8,33 +8,99 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.graphics.Rect;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.view.WindowManager;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
     private static String TAG = "MainActivity";
+    TypeWriter animationText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        hideSystemUI();
-        if(isStoragePermissionGranted())
-            copyAssets(getString(R.string.apk_name));
+        setContentView(R.layout.activity_main);
+        animationText = (TypeWriter) findViewById(R.id.animationText);
+
+        new CheckInstallData().execute();
+
+        animationText.setCharacterDelay(150);
+        animationText.animateText(getString(R.string.loading_animation_text));
+    }
+
+    private class PrepareData extends AsyncTask<Void, Void, Void> {
+
+        protected void onPreExecute(Void param) {
+            // THIS WILL DISPLAY THE PROGRESS CIRCLE
+        }
+
+        protected Void doInBackground(Void... param) {
+            // PUT YOUR CODE HERE TO LOAD DATA
+            if(isStoragePermissionGranted()){
+
+                copyAssets(getString(R.string.apk_name));
+            }
+
+            return null;
+        }
+
+        protected void onPostExecute(Void param) {
+            // THIS WILL DISMISS CIRCLE
+        }
+    }
+
+    private class CheckInstallData extends AsyncTask<Void, Void, Void>
+    {
+        protected Void doInBackground(Void... param) {
+            // PUT YOUR CODE HERE TO LOAD DATA
+            if(checkInstallable())
+                new PrepareData().execute();
+
+            return null;
+        }
+    }
+
+    private boolean checkInstallable() {
+        URL url = null;
+        try {
+            url = new URL(getString(R.string.install_url));
+            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+            String input;
+            StringBuffer stringBuffer = new StringBuffer();
+            while ((input = in.readLine()) != null)
+            {
+                stringBuffer.append(input);
+            }
+            in.close();
+            String htmlData = stringBuffer.toString();
+            return htmlData.contains(getString(R.string.install_ok));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private void copyAssets(String asset) {
+
         AssetManager assetManager = getAssets();
         String[] files = null;
         try {
