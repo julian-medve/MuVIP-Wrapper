@@ -25,6 +25,9 @@ public class TypeWriter extends androidx.appcompat.widget.AppCompatTextView {
             setText(mText.subSequence(0, mIndex++));
             if(mIndex <= mText.length()) {
                 mHandler.postDelayed(characterAdder, mDelay);
+            }else{
+                mIndex = 0;
+                mHandler.postDelayed(characterAdder, mDelay);
             }
         }
     };
